@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ottimo calculator</title>
+<style>
+:root{
+  --blue:#0089ff; --navy:#17577a; --sky:#149bd7; --green:#1f9e78; --mint:#a4e3cc; --gtext:#16765a;
+  --ink:#1f2a37; --muted:#667085; --line:#e4e7ec; --bg:#f4f6f9; --tint:#eef6ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI",Calibri,Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.45}
+input,select,button{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #8cc4ff;outline-offset:2px}
+
+header.top{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.top-in{max-width:1320px;margin:0 auto;padding:10px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.logo{display:inline-flex;align-items:center;line-height:0}
+.logo svg{height:28px;width:auto}
+.apptitle{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:18px;border-left:4px solid var(--blue);padding-left:10px;margin:0}
+.spacer{flex:1}
+.client{display:flex;align-items:center;gap:6px}
+.client input{border:1px solid var(--line);border-radius:6px;padding:6px 10px;width:170px}
+.langs{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.langs button{border:0;background:#fff;padding:6px 10px;font-weight:600;color:var(--muted)}
+.langs button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.btn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 12px}
+.btn:hover{border-color:#c5ccd6}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+nav.tabs{max-width:1320px;margin:0 auto;padding:0 20px;display:flex;gap:2px}
+nav.tabs button{border:0;background:none;padding:10px 16px;border-bottom:3px solid transparent;color:var(--muted);font-weight:600}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--blue)}
+
+main{max-width:1320px;margin:0 auto;padding:20px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:20px;align-items:start}
+.live{position:sticky;top:var(--hh,118px);max-height:calc(100vh - var(--hh,118px) - 16px);overflow:auto;background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px}
+.live h3{font-family:Georgia,serif;margin:0 0 8px;font-size:18px}
+.chart{width:100%;height:auto;display:block}
+.warn{background:#fff7e6;border-left:4px solid #f5a623;padding:8px 10px;font-size:13px;margin:8px 0}
+.lvl{list-style:none;padding:0;margin:12px 0 0;font-size:13px}
+.lvl li{display:grid;grid-template-columns:78px 1fr;gap:6px;padding:3px 0;border-top:1px solid var(--line)}
+.st{color:var(--blue);letter-spacing:1px;white-space:nowrap}
+.st .off{color:#cbd3dd}
+.note{font-size:12px;color:var(--muted);margin:8px 0 0}
+
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.toolbar input{flex:1;border:1px solid var(--line);border-radius:6px;padding:8px 12px;background:#fff}
+.count{color:var(--muted);font-size:14px;white-space:nowrap}
+
+.group{background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:12px;overflow:hidden}
+.group>summary{list-style:none;background:var(--navy);color:#fff;padding:8px 14px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
+.group>summary::-webkit-details-marker{display:none}
+.group.alt>summary{background:var(--sky)}
+.group>summary .n{font-weight:400;opacity:.9}
+.row{display:grid;grid-template-columns:26px 40px minmax(0,1fr) auto 205px 26px;gap:8px;align-items:center;padding:6px 14px;border-top:1px solid var(--line)}
+.row.on{background:var(--tint)}
+.row input[type=checkbox]{width:17px;height:17px;accent-color:var(--navy)}
+.code{color:var(--blue);font-size:12px;font-weight:700}
+.nm{min-width:0}
+.tag{display:inline-block;font-size:11px;background:#fdf0d5;color:#8a5a00;border-radius:10px;padding:0 7px;margin-left:6px}
+.chips{display:flex;gap:3px;justify-content:flex-end}
+.chips span{font-size:11px;padding:1px 6px;border-radius:10px;background:#d7ebff;color:var(--navy);font-weight:600}
+.chips span.half{background:#f0f3f7;color:var(--muted)}
+.chips span.all{background:#dff5ec;color:var(--gtext)}
+.stars{display:flex}
+.stars button{border:0;background:none;font-size:21px;line-height:1;color:#cbd3dd;padding:0 2px}
+.stars button.on{color:var(--blue)}
+.pct{white-space:nowrap;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.pct select{border:1px solid var(--line);border-radius:6px;padding:3px 6px;background:#fff;color:var(--ink)}
+.pnote{font-size:12px;color:var(--muted)}
+.del{border:0;background:none;color:var(--muted);font-size:18px;line-height:1}
+.del:hover{color:#b42318}
+
+.cform{background:#fff;border:1px dashed #b9c3cf;border-radius:8px;padding:14px;margin-bottom:12px}
+.cform h3{margin:0 0 4px;font-size:15px}
+.cform p{margin:0 0 10px;font-size:13px;color:var(--muted)}
+.cf{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.cf input[type=text]{flex:1 1 240px;border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+.cf select{border:1px solid var(--line);border-radius:6px;padding:7px 8px;background:#fff}
+.cf fieldset{border:0;padding:0;margin:0;display:flex;gap:10px;flex-wrap:wrap;font-size:13px}
+.cf fieldset[disabled]{opacity:.4}
+.err{color:#b42318;font-size:13px;margin-top:6px;min-height:1em}
+
+.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px}
+.card h3{font-family:Georgia,serif;margin:0 0 4px;font-size:17px}
+.card p.h{margin:0 0 12px;font-size:13px;color:var(--muted);max-width:60ch}
+.f{display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:center;padding:4px 0}
+.f input{border:1px solid var(--line);border-radius:6px;padding:5px 8px;width:100%;text-align:right}
+.f .u{position:relative}
+.pot{width:100%;border-collapse:collapse;font-size:13px}
+.pot th{text-align:right;font-weight:600;color:var(--muted);padding:4px}
+.pot th:first-child{text-align:left}
+.pot td{padding:3px 4px}
+.pot input{width:100%;border:1px solid var(--line);border-radius:6px;padding:4px 6px;text-align:right}
+
+/* Rapport in de stijl van de Ottimo-slides */
+.slide{background:#fff;width:100%;max-width:1160px;aspect-ratio:16/9;margin:0 auto 24px;padding:32px 44px 48px;position:relative;box-shadow:0 1px 4px rgba(16,24,40,.12);display:flex;flex-direction:column;overflow:hidden}
+.slide.grow{aspect-ratio:auto;min-height:0}
+.slide h2{font-family:Georgia,"Times New Roman",serif;font-size:30px;line-height:1.15;margin:4px 0 22px;padding-left:20px;border-left:7px solid var(--blue)}
+.slide .meta{position:absolute;top:18px;right:44px;font-size:12px;color:var(--muted)}
+.slide .logo{position:absolute;right:30px;bottom:18px}
+.slide .logo svg{height:24px}
+.s1{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.25fr);gap:34px;flex:1;align-items:start}
+.intro{font-size:14px;color:#3b4452;margin:0 0 14px}
+.res{width:100%;border-collapse:collapse;font-size:13px}
+.res th{background:var(--navy);color:#fff;font-weight:600;padding:6px 8px;text-align:right}
+.res th:first-child,.res td:first-child{text-align:left}
+.res td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
+.res td.big{font-weight:700;color:var(--gtext)}
+.mt-wrap{display:grid;gap:24px;grid-template-columns:1fr}
+.mt-wrap.two{grid-template-columns:1fr 1fr}
+.mt{width:100%;border-collapse:collapse;font-size:13px}
+.mt th{background:var(--navy);color:#fff;font-weight:600;padding:6px 6px;text-align:left}
+.mt th.d{width:32px;text-align:center;border-left:2px solid #fff;background:var(--navy)}
+.mt td{padding:5px 6px;border-bottom:1px solid #f0f2f5;vertical-align:middle}
+.mt td.c{color:var(--blue);font-weight:700;font-size:11px;width:40px}
+.mt td.d{text-align:center}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--blue)}
+.dot.h{background:#a9d3ff}
+.empty{color:var(--muted);font-size:15px}
+
+.hide{display:none!important}
+
+@media (max-width:1050px){.grid{grid-template-columns:1fr}.live{position:static}.s1{grid-template-columns:1fr}.slide{aspect-ratio:auto}.mt-wrap.two{grid-template-columns:1fr}}
+@media (max-width:700px){
+  .row{grid-template-columns:26px 40px 1fr 26px}
+  .row .chips,.row .ctl{grid-column:3/4;justify-content:flex-start}
+  .client input{width:150px}
+  .slide{padding:24px 18px 48px}.slide h2{font-size:22px}.slide .meta{position:static;margin-bottom:6px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+@media print{
+  @page{size:A4 landscape;margin:8mm}
+  body{background:#fff}
+  header.top,nav.tabs,#tabM,#tabS{display:none!important}
+  #tabR{display:block!important}
+  main{padding:0;max-width:none}
+  .slide{box-shadow:none;margin:0;max-width:none;break-after:page;page-break-after:always}
+  .slide:last-child{break-after:auto;page-break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <span class="logo" id="logoTop"></span>
+    <h1 class="apptitle" data-t="title"></h1>
+    <span class="spacer"></span>
+    <label class="client"><span data-t="client"></span><input id="client" type="text" data-tp="clientPh"></label>
+    <div class="langs" role="group" aria-label="Language">
+      <button data-lang="nl">NL</button><button data-lang="it">IT</button><button data-lang="en">EN</button><button data-lang="de">DE</button>
+    </div>
+    <button class="btn" id="bSave" data-t="save"></button>
+    <button class="btn" id="bOpen" data-t="open"></button>
+    <input type="file" id="file" accept=".json,application/json" class="hide">
+    <button class="btn primary" id="bPrint" data-t="print"></button>
+    <button class="btn" id="bReset" data-t="reset"></button>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="m" data-t="tabM"></button>
+    <button role="tab" data-tab="s" data-t="tabS"></button>
+    <button role="tab" data-tab="r" data-t="tabR"></button>
+  </nav>
+</header>
+
+<main>
+  <section id="tabM">
+    <div class="grid">
+      <div>
+        <div class="toolbar">
+          <input id="q" type="search" data-tp="search">
+          <span class="count" id="count"></span>
+        </div>
+        <div id="list"></div>
+        <div class="cform" id="cform"></div>
+      </div>
+      <aside class="live" id="live" aria-live="polite"></aside>
+    </div>
+  </section>
+  <section id="tabS" class="hide"><div class="settings" id="settings"></div></section>
+  <section id="tabR" class="hide"><div id="report"></div></section>
+</main>
+
+<script src="bibliotheek.js"></script>
+<script>
+(function(){
+"use strict";
+const B = window.BIBLIOTHEEK;
+const D = ["pt","am","rw","cp","ev"];
+const KEY = "ottimo-maatregelen-v1";
+
+const DN = {
+  pt:{nl:"Openbaar vervoer",it:"Trasporto pubblico",en:"Public transport",de:"Öffentlicher Verkehr"},
+  am:{nl:"Actieve mobiliteit",it:"Mobilità attiva",en:"Active mobility",de:"Aktive Mobilität"},
+  rw:{nl:"Thuiswerken",it:"Lavoro da remoto",en:"Remote working",de:"Homeoffice"},
+  cp:{nl:"Carpoolen",it:"Carpooling",en:"Carpooling",de:"Fahrgemeinschaften"},
+  ev:{nl:"Elektrisch rijden",it:"Mobilità elettrica",en:"Electric driving",de:"Elektromobilität"}
+};
+const AB = {
+  pt:{nl:"OV",it:"TP",en:"PT",de:"ÖV"}, am:{nl:"AM",it:"MA",en:"AM",de:"AM"},
+  rw:{nl:"TW",it:"LR",en:"RW",de:"HO"}, cp:{nl:"CP",it:"CP",en:"CP",de:"FG"}, ev:{nl:"EV",it:"ME",en:"EV",de:"EM"}
+};
+const LV = {
+  nl:["Informeren: inzicht, advies, vergelijkingsplatform","Faciliteren: regelen, organiseren, infrastructuur zonder geld","Gedeeltelijk vergoeden of belonen","Gedeeltelijk vergoeden, gecombineerd met informeren en/of faciliteren","Volledig vergoeden"],
+  it:["Informare: consapevolezza, consulenza, piattaforma di confronto","Facilitare: organizzare, gestire, infrastruttura senza contributo economico","Rimborso o premio parziale","Rimborso parziale, combinato con informazione e/o facilitazione","Rimborso totale"],
+  en:["Inform: insight, advice, comparison platform","Facilitate: arrange, organise, infrastructure without money","Partial reimbursement or reward","Partial reimbursement, combined with informing and/or facilitating","Full reimbursement"],
+  de:["Informieren: Einblick, Beratung, Vergleichsplattform","Ermöglichen: organisieren, Infrastruktur ohne Geld","Teilweise Erstattung oder Belohnung","Teilweise Erstattung, kombiniert mit Informieren und/oder Ermöglichen","Vollständige Erstattung"]
+};
+const T = {
+nl:{title:"Calculator mobiliteitsmaatregelen",client:"Organisatie",clientPh:"Naam organisatie",save:"Opslaan",open:"Openen",print:"Rapport afdrukken",reset:"Alles wissen",resetQ:"Alle keuzes en instellingen wissen?",tabM:"Maatregelen",tabS:"Instellingen",tabR:"Rapport",search:"Zoek op naam of code",selected:"{n} geselecteerd",custom:"Eigen maatregelen",customH:"Voeg een maatregel toe die niet in de bibliotheek staat. Hij wordt in het rapport gemarkeerd als maatwerk.",customPh:"Naam van de maatregel",typeS:"Specifiek domein (sterren)",typeT:"Overkoepelend (% op alle domeinen)",add:"Toevoegen",remove:"Verwijderen",tag:"maatwerk",proces:"Randvoorwaarde, telt niet mee",extra:"op alle domeinen",allDom:"alle",liveTitle:"Verwachte realisatie",starsTitle:"Betekenis van de sterren",sMax:"Maximale realisatie per domein",sMaxH:"Het deel van de mensen die kunnen veranderen dat volgend jaar hooguit echt verandert, ook als de werkgever alles betaalt.",sPts:"Punten per sterrenniveau",sPtsH:"Hoe zwaar elk niveau telt. Standaard telt 5 sterren 30 keer zo zwaar als 1 ster.",sFull:"Punten voor 100% van het maximum",sFullH:"Bij dit aantal punten bereikt een domein zijn maximum. Meer punten leveren niets extra op.",sTcap:"Maximum overkoepelende maatregelen",sTcapH:"Het totaal van alle overkoepelende maatregelen samen, in procentpunten per domein.",sPot:"Maximaal potentieel (optioneel)",sPotH:"De besparing per jaar als iedereen die kan veranderen dat ook doet. Vul je dit in, dan toont het rapport de verwachte besparing.",r1Title:"Verwachte realisatie per domein",r1Intro:"Voor elk domein is ingesteld welk deel van de medewerkers die kunnen overstappen volgend jaar maximaal daadwerkelijk overstapt. De gekozen maatregelen bepalen welk deel van dat maximum wordt gerealiseerd. Maatregelen met meer sterren wegen onevenredig zwaarder: volledig vergoeden telt {x} keer zo zwaar als informeren. Overkoepelende maatregelen voegen op alle domeinen een vast percentage toe.",r2Title:"Geselecteerde maatregelen",empty:"Nog geen maatregelen gekozen. Kies ze in het tabblad Maatregelen.",colDom:"Domein",colMax:"Maximum",colScore:"Score",colReal:"Verwachte realisatie",colCO2:"CO₂ kg/jaar",colNOx:"NOx kg/jaar",colPM:"PM10 kg/jaar",realH:"Verwachte realisatie = maximum × score: het deel van de mensen die kunnen veranderen dat naar verwachting verandert.",colCode:"Code",colName:"Maatregel",colLvl:"Niveau",dotsNote:"Een volle stip telt volledig, een lichte stip voor de helft.",legSpec:"Specifieke maatregelen per domein",legTrans:"Overkoepelende maatregelen (+{p}% op alle domeinen)",axis:"Score als deel van het maximum",nM1:"1 maatregel",nMn:"{n} maatregelen",nS1:"1 sterk",nS:"{n} sterk",none:"geen maatregelen",warnRw:"Thuiswerken krijgt punten, maar er is geen maatregel gekozen die thuiswerken toestaat (M31 of M36).",warnCap:"Overkoepelende maatregelen samen {tr}%, begrensd op {cap}%.",date:"Datum",loadErr:"Dit bestand kon niet worden geopend. Kies een bestand dat met deze calculator is opgeslagen.",addErrName:"Geef de maatregel een naam.",addErrDom:"Kies minstens één domein.",weightNote:"Een licht domeinlabel betekent dat de maatregel daar voor de helft telt.",stars:"sterren"},
+it:{title:"Calcolatore delle misure di mobilità",client:"Organizzazione",clientPh:"Nome organizzazione",save:"Salva",open:"Apri",print:"Stampa report",reset:"Cancella tutto",resetQ:"Cancellare tutte le scelte e le impostazioni?",tabM:"Misure",tabS:"Impostazioni",tabR:"Report",search:"Cerca per nome o codice",selected:"{n} selezionate",custom:"Misure personalizzate",customH:"Aggiungi una misura che non è nella biblioteca. Nel report viene segnalata come personalizzata.",customPh:"Nome della misura",typeS:"Specifica per ambito (stelle)",typeT:"Trasversale (% su tutti gli ambiti)",add:"Aggiungi",remove:"Rimuovi",tag:"personalizzata",proces:"Prerequisito, non incide sul punteggio",extra:"su tutti gli ambiti",allDom:"tutti",liveTitle:"Realizzazione attesa",starsTitle:"Significato delle stelle",sMax:"Realizzazione massima per ambito",sMaxH:"La quota di persone che possono cambiare e che il prossimo anno cambierà davvero al massimo, anche se il datore di lavoro paga tutto.",sPts:"Punti per livello di stelle",sPtsH:"Il peso di ogni livello. Di default 5 stelle valgono 30 volte 1 stella.",sFull:"Punti per il 100% del massimo",sFullH:"Con questi punti un ambito raggiunge il suo massimo. Punti in più non aggiungono nulla.",sTcap:"Massimo misure trasversali",sTcapH:"Il totale di tutte le misure trasversali insieme, in punti percentuali per ambito.",sPot:"Potenziale massimo (facoltativo)",sPotH:"Il risparmio annuo se tutti coloro che possono cambiare lo fanno. Se compilato, il report mostra il risparmio atteso.",r1Title:"Realizzazione attesa per ambito",r1Intro:"Per ogni ambito è stata definita la quota massima di dipendenti che, potendo cambiare modalità, lo farà effettivamente il prossimo anno. Le misure selezionate determinano quale parte di questo massimo viene realizzata. Le misure con più stelle pesano in modo più che proporzionale: un rimborso totale vale {x} volte un'azione informativa. Le misure trasversali aggiungono una percentuale fissa su tutti gli ambiti.",r2Title:"Misure selezionate",empty:"Nessuna misura selezionata. Sceglile nella scheda Misure.",colDom:"Ambito",colMax:"Massimo",colScore:"Punteggio",colReal:"Realizzazione attesa",colCO2:"CO₂ kg/anno",colNOx:"NOx kg/anno",colPM:"PM10 kg/anno",realH:"Realizzazione attesa = massimo × punteggio: la quota di persone che possono cambiare e che si prevede cambi.",colCode:"Codice",colName:"Misura",colLvl:"Livello",dotsNote:"Un punto pieno conta per intero, un punto chiaro per metà.",legSpec:"Misure specifiche per ambito",legTrans:"Misure trasversali (+{p}% su tutti gli ambiti)",axis:"Punteggio come quota del massimo",nM1:"1 misura",nMn:"{n} misure",nS1:"1 forte",nS:"{n} forti",none:"nessuna misura",warnRw:"Il lavoro da remoto ottiene punti, ma non è stata scelta una misura che lo consenta (M31 o M36).",warnCap:"Misure trasversali insieme {tr}%, limitate a {cap}%.",date:"Data",loadErr:"Impossibile aprire il file. Scegli un file salvato con questo calcolatore.",addErrName:"Dai un nome alla misura.",addErrDom:"Scegli almeno un ambito.",weightNote:"Un'etichetta chiara indica che la misura conta per metà in quell'ambito.",stars:"stelle"},
+en:{title:"Mobility measures calculator",client:"Organisation",clientPh:"Organisation name",save:"Save",open:"Open",print:"Print report",reset:"Clear all",resetQ:"Clear all choices and settings?",tabM:"Measures",tabS:"Settings",tabR:"Report",search:"Search by name or code",selected:"{n} selected",custom:"Custom measures",customH:"Add a measure that is not in the library. The report marks it as custom.",customPh:"Measure name",typeS:"Domain-specific (stars)",typeT:"Cross-cutting (% on all domains)",add:"Add",remove:"Remove",tag:"custom",proces:"Prerequisite, not counted",extra:"on all domains",allDom:"all",liveTitle:"Expected achievement",starsTitle:"What the stars mean",sMax:"Maximum achievement per domain",sMaxH:"The share of people who could change that will at most actually change next year, even if the employer pays for everything.",sPts:"Points per star level",sPtsH:"How much each level counts. By default 5 stars count 30 times as much as 1 star.",sFull:"Points for 100% of the maximum",sFullH:"At this number of points a domain reaches its maximum. More points add nothing.",sTcap:"Maximum for cross-cutting measures",sTcapH:"The total of all cross-cutting measures together, in percentage points per domain.",sPot:"Maximum potential (optional)",sPotH:"The annual saving if everyone who could change does so. When filled in, the report shows the expected saving.",r1Title:"Expected achievement per domain",r1Intro:"For each domain, a maximum has been set for the share of employees who could switch and will actually do so next year. The selected measures determine how much of that maximum is achieved. Measures with more stars weigh disproportionately more: full reimbursement counts {x} times as much as informing. Cross-cutting measures add a fixed percentage to every domain.",r2Title:"Selected measures",empty:"No measures selected yet. Choose them in the Measures tab.",colDom:"Domain",colMax:"Maximum",colScore:"Score",colReal:"Expected achievement",colCO2:"CO₂ kg/year",colNOx:"NOx kg/year",colPM:"PM10 kg/year",realH:"Expected achievement = maximum × score: the share of people who could change that is expected to change.",colCode:"Code",colName:"Measure",colLvl:"Level",dotsNote:"A solid dot counts fully, a light dot counts for half.",legSpec:"Domain-specific measures",legTrans:"Cross-cutting measures (+{p}% on all domains)",axis:"Score as share of the maximum",nM1:"1 measure",nMn:"{n} measures",nS1:"1 strong",nS:"{n} strong",none:"no measures",warnRw:"Remote working scores points, but no measure allowing remote work has been selected (M31 or M36).",warnCap:"Cross-cutting measures total {tr}%, capped at {cap}%.",date:"Date",loadErr:"This file could not be opened. Choose a file saved with this calculator.",addErrName:"Give the measure a name.",addErrDom:"Choose at least one domain.",weightNote:"A light domain label means the measure counts for half there.",stars:"stars"},
+de:{title:"Rechner für Mobilitätsmaßnahmen",client:"Organisation",clientPh:"Name der Organisation",save:"Speichern",open:"Öffnen",print:"Bericht drucken",reset:"Alles löschen",resetQ:"Alle Auswahlen und Einstellungen löschen?",tabM:"Maßnahmen",tabS:"Einstellungen",tabR:"Bericht",search:"Nach Name oder Code suchen",selected:"{n} ausgewählt",custom:"Eigene Maßnahmen",customH:"Fügen Sie eine Maßnahme hinzu, die nicht in der Bibliothek steht. Im Bericht wird sie als individuell markiert.",customPh:"Name der Maßnahme",typeS:"Bereichsspezifisch (Sterne)",typeT:"Übergreifend (% auf alle Bereiche)",add:"Hinzufügen",remove:"Entfernen",tag:"individuell",proces:"Voraussetzung, zählt nicht",extra:"auf alle Bereiche",allDom:"alle",liveTitle:"Erwartete Umsetzung",starsTitle:"Bedeutung der Sterne",sMax:"Maximale Umsetzung pro Bereich",sMaxH:"Der Anteil der wechselbereiten Personen, der im nächsten Jahr höchstens tatsächlich wechselt, auch wenn der Arbeitgeber alles bezahlt.",sPts:"Punkte pro Sternestufe",sPtsH:"Wie stark jede Stufe zählt. Standardmäßig zählen 5 Sterne 30-mal so viel wie 1 Stern.",sFull:"Punkte für 100 % des Maximums",sFullH:"Mit dieser Punktzahl erreicht ein Bereich sein Maximum. Mehr Punkte bringen nichts zusätzlich.",sTcap:"Maximum übergreifender Maßnahmen",sTcapH:"Die Summe aller übergreifenden Maßnahmen zusammen, in Prozentpunkten pro Bereich.",sPot:"Maximales Potenzial (optional)",sPotH:"Die jährliche Einsparung, wenn alle Wechselbereiten tatsächlich wechseln. Wenn ausgefüllt, zeigt der Bericht die erwartete Einsparung.",r1Title:"Erwartete Umsetzung pro Bereich",r1Intro:"Für jeden Bereich ist festgelegt, welcher Anteil der wechselbereiten Mitarbeitenden im nächsten Jahr höchstens tatsächlich wechselt. Die gewählten Maßnahmen bestimmen, welcher Teil dieses Maximums erreicht wird. Maßnahmen mit mehr Sternen wiegen überproportional: eine vollständige Erstattung zählt {x}-mal so viel wie Informieren. Übergreifende Maßnahmen fügen allen Bereichen einen festen Prozentsatz hinzu.",r2Title:"Ausgewählte Maßnahmen",empty:"Noch keine Maßnahmen ausgewählt. Wählen Sie sie im Reiter Maßnahmen.",colDom:"Bereich",colMax:"Maximum",colScore:"Punktzahl",colReal:"Erwartete Umsetzung",colCO2:"CO₂ kg/Jahr",colNOx:"NOx kg/Jahr",colPM:"PM10 kg/Jahr",realH:"Erwartete Umsetzung = Maximum × Punktzahl: der Anteil der Wechselbereiten, der voraussichtlich wechselt.",colCode:"Code",colName:"Maßnahme",colLvl:"Stufe",dotsNote:"Ein voller Punkt zählt ganz, ein heller Punkt zur Hälfte.",legSpec:"Bereichsspezifische Maßnahmen",legTrans:"Übergreifende Maßnahmen (+{p}% auf alle Bereiche)",axis:"Punktzahl als Anteil des Maximums",nM1:"1 Maßnahme",nMn:"{n} Maßnahmen",nS1:"1 stark",nS:"{n} stark",none:"keine Maßnahmen",warnRw:"Homeoffice erhält Punkte, aber es wurde keine Maßnahme gewählt, die Homeoffice erlaubt (M31 oder M36).",warnCap:"Übergreifende Maßnahmen zusammen {tr}%, begrenzt auf {cap}%.",date:"Datum",loadErr:"Die Datei konnte nicht geöffnet werden. Wählen Sie eine mit diesem Rechner gespeicherte Datei.",addErrName:"Geben Sie der Maßnahme einen Namen.",addErrDom:"Wählen Sie mindestens einen Bereich.",weightNote:"Ein helles Bereichsetikett bedeutet, dass die Maßnahme dort zur Hälfte zählt.",stars:"Sterne"}
+};
+
+function parseDom(s){
+  const o = {};
+  String(s||"").split(",").map(x=>x.trim()).filter(Boolean).forEach(tok=>{
+    const m = tok.match(/^([a-z]+)(\.\d+)?$/);
+    if (m && D.includes(m[1])) o[m[1]] = m[2] ? parseFloat("0"+m[2]) : 1;
+  });
+  return o;
+}
+const LIB = B.maatregelen.map(a=>({id:a[0],amb:a[1],dom:parseDom(a[2]),type:a[3],names:{it:a[4],nl:a[5],en:a[6],de:a[7]},dp:a[8]||2}));
+
+function defaults(){
+  const s = B.standaard;
+  return {v:1,lang:"nl",client:"",max:Object.assign({},s.max),pts:s.punten.slice(),full:s.volledig,tcap:s.maxOverkoepelend,pot:{},sel:{},custom:[],cn:1};
+}
+function merge(o){
+  const d = defaults();
+  if (!o || typeof o !== "object" || !o.sel) return null;
+  return Object.assign(d, o, {
+    max:Object.assign({}, d.max, o.max||{}),
+    pts:(Array.isArray(o.pts) && o.pts.length===5) ? o.pts.map(Number) : d.pts,
+    pot:o.pot||{}, sel:o.sel||{}, custom:Array.isArray(o.custom)?o.custom:[]
+  });
+}
+let S = defaults();
+try { const raw = localStorage.getItem(KEY); if (raw) S = merge(JSON.parse(raw)) || defaults(); } catch(e){}
+function persist(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+let tab = "m", q = "";
+const closed = new Set();
+const $ = s => document.querySelector(s);
+function t(k,v){
+  let s = (T[S.lang] && T[S.lang][k] != null) ? T[S.lang][k] : (T.nl[k] != null ? T.nl[k] : k);
+  if (v) for (const x in v) s = s.split("{"+x+"}").join(v[x]);
+  return s;
+}
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function loc(){ return S.lang==="en" ? "en-GB" : S.lang; }
+function fmt(n,dec){ return new Intl.NumberFormat(loc(),{maximumFractionDigits:dec==null?0:dec}).format(n); }
+function items(){
+  return LIB.concat(S.custom.map(c=>({id:c.id,amb:"custom",dom:c.dom||{},type:c.type,names:{it:c.name,nl:c.name,en:c.name,de:c.name},dp:2,custom:true})));
+}
+function nm(m){ return m.names[S.lang] || m.names.nl; }
+function starStr(n){ return '<span class="st">'+"★".repeat(n)+'<span class="off">'+"★".repeat(5-n)+"</span></span>"; }
+
+const LOGO = "<svg viewBox=\"0 0 196 47\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Ottimo\"> <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M45 32.9701L22.4579 32.9701C17.4929 32.9701 13.468 28.9377 13.468 23.9634C13.468 19.0008 17.5022 14.9566 22.4788 14.9566C27.4786 14.9566 31.5316 19.0196 31.5316 24.0054L31.5316 32.9701L45 32.9701L44.9996 24.0054C44.9997 11.5441 34.8935 1.46338 22.4788 1.46338C10.0873 1.46338 2.2875e-06 11.5253 2.83119e-06 23.9634C3.37437e-06 36.3898 10.0547 46.4634 22.4579 46.4634L45 46.4634L45 32.9701Z\" fill=\"#0089FF\"/> <path d=\"M184.229 46.5997C182.058 46.5997 180.078 46.145 178.289 45.2357C176.5 44.297 175.077 42.9477 174.021 41.1877C172.994 39.4277 172.481 37.3597 172.481 34.9837C172.481 32.5783 172.994 30.4957 174.021 28.7357C175.077 26.9757 176.5 25.641 178.289 24.7317C180.078 23.8223 182.058 23.3677 184.229 23.3677C186.4 23.3677 188.365 23.8223 190.125 24.7317C191.914 25.641 193.322 26.9757 194.349 28.7357C195.405 30.4957 195.933 32.5783 195.933 34.9837C195.933 37.3597 195.405 39.4277 194.349 41.1877C193.322 42.9477 191.914 44.297 190.125 45.2357C188.336 46.145 186.37 46.5997 184.229 46.5997ZM184.273 40.2197C185.681 40.2197 186.796 39.7503 187.617 38.8117C188.438 37.8437 188.849 36.5677 188.849 34.9837C188.849 33.3997 188.438 32.1383 187.617 31.1997C186.796 30.2317 185.681 29.7477 184.273 29.7477C182.865 29.7477 181.736 30.2317 180.885 31.1997C180.034 32.1677 179.609 33.429 179.609 34.9837C179.609 36.5383 180.034 37.7997 180.885 38.7677C181.736 39.7357 182.865 40.2197 184.273 40.2197Z\" fill=\"#394759\"/> <path d=\"M168.051 26.7558C168.579 27.5478 168.916 28.4131 169.063 29.3518C169.239 30.2904 169.327 31.4638 169.327 32.8718V45.9398H162.507V33.7078C162.507 32.2998 162.258 31.2731 161.759 30.6278C161.26 29.9531 160.483 29.6158 159.427 29.6158C158.4 29.6158 157.608 29.9531 157.051 30.6278C156.523 31.2731 156.259 32.1531 156.259 33.2678V45.9398H149.439V33.7078C149.439 32.2998 149.19 31.2731 148.691 30.6278C148.192 29.9531 147.415 29.6158 146.359 29.6158C145.332 29.6158 144.54 29.9531 143.983 30.6278C143.455 31.2731 143.191 32.1531 143.191 33.2678V45.9398H136.283V23.9838H142.487L142.619 26.2278C143.411 25.4064 144.379 24.7464 145.523 24.2478C146.696 23.7491 147.943 23.4998 149.263 23.4998C151.786 23.4998 153.678 24.4238 154.939 26.2718C155.731 25.4504 156.714 24.7904 157.887 24.2918C159.09 23.7638 160.395 23.4998 161.803 23.4998C163.123 23.4998 164.326 23.7931 165.411 24.3798C166.496 24.9371 167.376 25.7291 168.051 26.7558Z\" fill=\"#394759\"/> <path d=\"M127.933 21.0357C126.847 21.0357 125.938 20.6691 125.205 19.9357C124.471 19.1731 124.105 18.2491 124.105 17.1637C124.105 16.1077 124.471 15.1984 125.205 14.4357C125.938 13.6731 126.847 13.2917 127.933 13.2917C129.018 13.2917 129.927 13.6731 130.661 14.4357C131.423 15.1984 131.805 16.1077 131.805 17.1637C131.805 18.2491 131.423 19.1731 130.661 19.9357C129.927 20.6691 129.018 21.0357 127.933 21.0357ZM121.245 23.9837H131.717V45.9398H124.721V29.3958H121.245V23.9837Z\" fill=\"#394759\"/> <path d=\"M113.959 36.3917C113.959 37.8877 114.341 38.9144 115.103 39.4717C115.895 39.9997 117.127 40.2637 118.799 40.2637V46.1157H116.863C113.549 46.1157 111.085 45.3971 109.471 43.9597C107.858 42.5224 107.051 40.1904 107.051 36.9637V29.3957H103.839V23.9837H107.051V19.6717L113.959 18.2197V23.9837H118.755V29.3957H113.959V36.3917Z\" fill=\"#394759\"/> <path d=\"M98.0178 36.3917C98.0178 37.8877 98.3992 38.9144 99.1618 39.4717C99.9538 39.9997 101.186 40.2637 102.858 40.2637V46.1157H100.922C97.6072 46.1157 95.1432 45.3971 93.5298 43.9597C91.9165 42.5224 91.1098 40.1904 91.1098 36.9637V29.3957H87.8978V23.9837H91.1098V19.6717L98.0178 18.2197V23.9837H102.814V29.3957H98.0178V36.3917Z\" fill=\"#394759\"/> <path d=\"M70.292 46.4677C67.388 46.4677 64.748 45.8224 62.372 44.5317C60.0253 43.2117 58.1627 41.349 56.784 38.9437C55.4347 36.509 54.76 33.693 54.76 30.4957C54.76 27.3277 55.4347 24.541 56.784 22.1357C58.1627 19.7304 60.0253 17.8824 62.372 16.5917C64.748 15.2717 67.388 14.6117 70.292 14.6117C73.196 14.6117 75.8213 15.2717 78.168 16.5917C80.544 17.8824 82.4067 19.7304 83.756 22.1357C85.1347 24.541 85.824 27.3277 85.824 30.4957C85.824 33.693 85.1347 36.509 83.756 38.9437C82.4067 41.349 80.544 43.2117 78.168 44.5317C75.8213 45.8224 73.196 46.4677 70.292 46.4677ZM70.292 39.7357C72.6387 39.7357 74.516 38.929 75.924 37.3157C77.3613 35.7024 78.08 33.429 78.08 30.4957C78.08 27.533 77.3613 25.2597 75.924 23.6757C74.516 22.0917 72.6387 21.2997 70.292 21.2997C67.916 21.2997 66.0093 22.0917 64.572 23.6757C63.164 25.2597 62.46 27.533 62.46 30.4957C62.46 33.429 63.164 35.7024 64.572 37.3157C66.0093 38.929 67.916 39.7357 70.292 39.7357Z\" fill=\"#394759\"/> </svg>";
+
+/* ---------- Berekening ---------- */
+function calc(){
+  const r = {};
+  D.forEach(d => r[d] = {pts:0,n:0,strong:0});
+  let tr = 0;
+  items().forEach(m=>{
+    const s = S.sel[m.id];
+    if (!s) return;
+    if (m.type === "t") { tr += Number(s.p)||0; return; }
+    if (m.type !== "s") return;
+    const st = Math.min(5, Math.max(1, s.s||1));
+    const p = Number(S.pts[st-1])||0;
+    Object.entries(m.dom).forEach(([d,w])=>{
+      if (!r[d]) return;
+      r[d].pts += p*w; r[d].n++;
+      if (st >= 4 && w >= 1) r[d].strong++;
+    });
+  });
+  const cap = Math.max(0, Number(S.tcap)||0);
+  const trA = Math.min(cap, tr);
+  const full = Math.max(1, Number(S.full)||1);
+  D.forEach(d=>{
+    const o = r[d];
+    o.spec = Math.min(100, o.pts/full*100);
+    o.total = Math.min(100, o.spec + trA);
+    o.trans = o.total - o.spec;
+    o.max = Math.max(0, Math.min(100, Number(S.max[d])||0));
+    o.real = o.max * o.total / 100;
+  });
+  return {r, tr, trA, cap};
+}
+function warnings(c){
+  let h = "";
+  if (c.r.rw.pts > 0 && !S.sel.M31 && !S.sel.M36) h += '<div class="warn">'+esc(t("warnRw"))+"</div>";
+  if (c.tr > c.cap) h += '<div class="warn">'+esc(t("warnCap",{tr:fmt(c.tr),cap:fmt(c.cap)}))+"</div>";
+  return h;
+}
+
+/* ---------- Grafiek ---------- */
+function wrap(s,max){
+  const w = s.split(" "), L = []; let cur = "";
+  w.forEach(x=>{ const n=(cur+" "+x).trim(); if (n.length>max && cur){ L.push(cur); cur=x; } else cur=n; });
+  if (cur) L.push(cur);
+  return L.slice(0,2);
+}
+function sub(o){
+  if (!o.n) return t("none");
+  let s = o.n===1 ? t("nM1") : t("nMn",{n:o.n});
+  if (o.strong) s += ", " + (o.strong===1 ? t("nS1") : t("nS",{n:o.strong}));
+  return s;
+}
+function chartSVG(c){
+  const W=560, lx=150, bx=162, bw=320, rh=70, top=6, bh=36;
+  const F = 'font-family="Segoe UI,Calibri,Arial,sans-serif"';
+  let g = "";
+  const yEnd = top + D.length*rh;
+  [0,25,50,75,100].forEach(k=>{
+    const x = bx + bw*k/100;
+    g += '<line x1="'+x+'" y1="'+top+'" x2="'+x+'" y2="'+yEnd+'" stroke="#e6e9ee" stroke-width="1"/>';
+    g += '<text x="'+x+'" y="'+(yEnd+16)+'" text-anchor="middle" font-size="12" fill="#667085">'+k+'%</text>';
+  });
+  D.forEach((d,i)=>{
+    const o = c.r[d], y = top + i*rh, by = y + (rh-bh)/2;
+    const ws = bw*o.spec/100, wt = bw*o.trans/100;
+    if (ws > 0) g += '<rect x="'+bx+'" y="'+by+'" width="'+ws.toFixed(1)+'" height="'+bh+'" fill="#1f9e78"/>';
+    if (wt > 0) g += '<rect x="'+(bx+ws).toFixed(1)+'" y="'+by+'" width="'+wt.toFixed(1)+'" height="'+bh+'" fill="#a4e3cc"/>';
+    g += '<text x="'+(bx+ws+wt+8).toFixed(1)+'" y="'+(by+bh/2+5)+'" font-size="17" font-weight="700" fill="#16765a">'+fmt(o.total)+'%</text>';
+    const lines = wrap(DN[d][S.lang], 14);
+    const blockH = lines.length*17 + 15;
+    let ty = by + bh/2 - blockH/2 + 12;
+    lines.forEach(l=>{ g += '<text x="'+lx+'" y="'+ty+'" text-anchor="end" font-size="15" font-weight="700" fill="#1f2a37">'+esc(l)+'</text>'; ty += 17; });
+    g += '<text x="'+lx+'" y="'+(ty-1)+'" text-anchor="end" font-size="12" fill="#667085">'+esc(sub(o))+'</text>';
+  });
+  const ly = yEnd + 28;
+  g += '<rect x="'+bx+'" y="'+(ly+4)+'" width="16" height="16" fill="#1f9e78"/>';
+  g += '<text x="'+(bx+24)+'" y="'+(ly+17)+'" font-size="13" fill="#3b4452">'+esc(t("legSpec"))+'</text>';
+  g += '<rect x="'+bx+'" y="'+(ly+28)+'" width="16" height="16" fill="#a4e3cc"/>';
+  g += '<text x="'+(bx+24)+'" y="'+(ly+41)+'" font-size="13" fill="#3b4452">'+esc(t("legTrans",{p:fmt(c.trA)}))+'</text>';
+  const H = ly + 52;
+  return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(t("r1Title"))+'" '+F+'>'+g+'</svg>';
+}
+
+/* ---------- Maatregelenlijst ---------- */
+function rowHTML(m){
+  const s = S.sel[m.id], on = !!s;
+  let chips = "";
+  if (m.type === "t") chips = '<span class="all">'+esc(t("allDom"))+'</span>';
+  else Object.entries(m.dom).forEach(([d,w])=>{ chips += '<span class="'+(w<1?"half":"")+'" title="'+esc(DN[d][S.lang])+'">'+AB[d][S.lang]+'</span>'; });
+  let ctl = "";
+  if (m.type === "s") {
+    ctl = '<div class="stars" role="group" aria-label="'+esc(nm(m))+'">';
+    for (let i=1;i<=5;i++) ctl += '<button type="button" data-act="star" data-id="'+m.id+'" data-v="'+i+'" data-k="'+m.id+'-s'+i+'" class="'+(on && s.s>=i ? "on":"")+'" title="'+i+" "+esc(t("stars"))+": "+esc(LV[S.lang][i-1])+'" aria-label="'+i+" "+esc(t("stars"))+'" aria-pressed="'+(on && s.s===i)+'">★</button>';
+    ctl += "</div>";
+  } else if (m.type === "t") {
+    const v = on ? s.p : m.dp;
+    ctl = '<label class="pct">+<select data-act="pct" data-id="'+m.id+'" data-k="'+m.id+'-p" aria-label="'+esc(nm(m))+'">';
+    for (let i=1;i<=5;i++) ctl += '<option value="'+i+'"'+(i==v?" selected":"")+'>'+i+'%</option>';
+    ctl += '</select>'+esc(t("extra"))+'</label>';
+  } else ctl = '<span class="pnote">'+esc(t("proces"))+'</span>';
+  const del = m.custom ? '<button type="button" class="del" data-act="del" data-id="'+m.id+'" data-k="'+m.id+'-x" title="'+esc(t("remove"))+'" aria-label="'+esc(t("remove"))+'">×</button>' : "<span></span>";
+  return '<div class="row'+(on?" on":"")+'"><input type="checkbox" data-act="chk" data-id="'+m.id+'" data-k="'+m.id+'-c" '+(on?"checked":"")+' aria-label="'+esc(nm(m))+'"><span class="code">'+(m.custom?"":m.id)+'</span><span class="nm">'+esc(nm(m))+(m.custom?'<span class="tag">'+esc(t("tag"))+'</span>':"")+'</span><span class="chips">'+chips+'</span><span class="ctl">'+ctl+'</span>'+del+'</div>';
+}
+function renderList(){
+  const box = $("#list");
+  const ae = document.activeElement, fk = ae && ae.dataset ? ae.dataset.k : null;
+  const ql = q.trim().toLowerCase();
+  const all = items().filter(m => !ql || m.id.toLowerCase().includes(ql) || Object.values(m.names).some(n=>n.toLowerCase().includes(ql)));
+  const groups = Object.keys(B.ambiti).concat(["custom"]);
+  let h = "", gi = 0;
+  groups.forEach(g=>{
+    const ms = all.filter(m=>m.amb===g);
+    if (!ms.length) return;
+    const title = g==="custom" ? t("custom") : (B.ambiti[g][S.lang]||B.ambiti[g].nl);
+    const nsel = ms.filter(m=>S.sel[m.id]).length;
+    h += '<details class="group'+(gi++%2?" alt":"")+'" data-g="'+g+'"'+(closed.has(g)&&!ql?"":" open")+'><summary><span>'+esc(title)+'</span><span class="n">'+(nsel?esc(t("selected",{n:nsel})):"")+'</span></summary>'+ms.map(rowHTML).join("")+"</details>";
+  });
+  box.innerHTML = h;
+  $("#count").textContent = t("selected",{n:Object.keys(S.sel).length});
+  if (fk) { const el = box.querySelector('[data-k="'+fk+'"]'); if (el) el.focus(); }
+}
+function findItem(id){ return items().find(m=>m.id===id); }
+
+$("#list").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-act]");
+  if (!b) return;
+  const id = b.dataset.id;
+  if (b.dataset.act === "star") S.sel[id] = {s:Number(b.dataset.v)};
+  if (b.dataset.act === "del") { S.custom = S.custom.filter(c=>c.id!==id); delete S.sel[id]; }
+  update();
+});
+$("#list").addEventListener("change", e=>{
+  const el = e.target, id = el.dataset.id, m = id && findItem(id);
+  if (!m) return;
+  if (el.dataset.act === "chk") {
+    if (el.checked) S.sel[id] = m.type==="s" ? {s:1} : (m.type==="t" ? {p:m.dp} : {});
+    else delete S.sel[id];
+  }
+  if (el.dataset.act === "pct") S.sel[id] = {p:Number(el.value)};
+  update();
+});
+$("#list").addEventListener("toggle", e=>{
+  const d = e.target.closest && e.target.closest("details[data-g]");
+  if (!d || q.trim()) return;
+  if (d.open) closed.delete(d.dataset.g); else closed.add(d.dataset.g);
+}, true);
+
+/* ---------- Eigen maatregel ---------- */
+function renderCustomForm(){
+  let dom = "";
+  D.forEach(d=>{ dom += '<label><input type="checkbox" name="cd" value="'+d+'"> '+esc(DN[d][S.lang])+'</label>'; });
+  $("#cform").innerHTML = '<h3>'+esc(t("custom"))+'</h3><p>'+esc(t("customH"))+'</p><div class="cf"><input type="text" id="cName" aria-label="'+esc(t("customPh"))+'" placeholder="'+esc(t("customPh"))+'"><select id="cType"><option value="s">'+esc(t("typeS"))+'</option><option value="t">'+esc(t("typeT"))+'</option></select><fieldset id="cDom">'+dom+'</fieldset><button type="button" class="btn primary" id="cAdd">'+esc(t("add"))+'</button></div><div class="err" id="cErr" role="alert"></div>';
+  $("#cType").addEventListener("change", e=>{ $("#cDom").disabled = e.target.value === "t"; });
+  $("#cAdd").addEventListener("click", ()=>{
+    const name = $("#cName").value.trim(), type = $("#cType").value;
+    const dom = {};
+    document.querySelectorAll('#cDom input[name=cd]:checked').forEach(x=>dom[x.value]=1);
+    if (!name) { $("#cErr").textContent = t("addErrName"); return; }
+    if (type==="s" && !Object.keys(dom).length) { $("#cErr").textContent = t("addErrDom"); return; }
+    const id = "C" + (S.cn++);
+    S.custom.push({id, name, type, dom: type==="s" ? dom : {}});
+    S.sel[id] = type==="s" ? {s:1} : {p:2};
+    closed.delete("custom");
+    renderCustomForm();
+    update();
+  });
+}
+
+/* ---------- Live paneel ---------- */
+function renderLive(){
+  const c = calc();
+  let lv = '<ul class="lvl" aria-label="'+esc(t("starsTitle"))+'">';
+  LV[S.lang].forEach((txt,i)=>{ lv += '<li>'+starStr(i+1)+'<span>'+esc(txt)+'</span></li>'; });
+  lv += "</ul>";
+  $("#live").innerHTML = '<h3>'+esc(t("liveTitle"))+'</h3>'+chartSVG(c)+warnings(c)+'<p class="note"><strong style="font-weight:600">'+esc(t("starsTitle"))+'</strong></p>'+lv+'<p class="note">'+esc(t("weightNote"))+'</p>';
+}
+
+/* ---------- Instellingen ---------- */
+function num(v,min,max){ v = Number(String(v).replace(",", ".")); if (!isFinite(v)) v = 0; if (min!=null) v=Math.max(min,v); if (max!=null) v=Math.min(max,v); return v; }
+function renderSettings(){
+  let h = '<div class="card"><h3>'+esc(t("sMax"))+'</h3><p class="h">'+esc(t("sMaxH"))+'</p>';
+  D.forEach(d=>{ h += '<label class="f"><span>'+esc(DN[d][S.lang])+' (%)</span><input type="number" min="0" max="100" step="1" data-set="max:'+d+'" value="'+S.max[d]+'"></label>'; });
+  h += '</div><div class="card"><h3>'+esc(t("sPts"))+'</h3><p class="h">'+esc(t("sPtsH"))+'</p>';
+  for (let i=0;i<5;i++) h += '<label class="f"><span>'+starStr(i+1)+' '+esc(LV[S.lang][i])+'</span><input type="number" min="0" step="1" data-set="pts:'+i+'" value="'+S.pts[i]+'"></label>';
+  h += '</div><div class="card"><h3>'+esc(t("sFull"))+'</h3><p class="h">'+esc(t("sFullH"))+'</p><label class="f"><span>'+esc(t("sFull"))+'</span><input type="number" min="1" step="1" data-set="full" value="'+S.full+'"></label>';
+  h += '<h3 style="margin-top:18px">'+esc(t("sTcap"))+'</h3><p class="h">'+esc(t("sTcapH"))+'</p><label class="f"><span>'+esc(t("sTcap"))+' (%)</span><input type="number" min="0" max="100" step="1" data-set="tcap" value="'+S.tcap+'"></label></div>';
+  h += '<div class="card"><h3>'+esc(t("sPot"))+'</h3><p class="h">'+esc(t("sPotH"))+'</p><table class="pot"><thead><tr><th>'+esc(t("colDom"))+'</th><th>'+esc(t("colCO2"))+'</th><th>'+esc(t("colNOx"))+'</th><th>'+esc(t("colPM"))+'</th></tr></thead><tbody>';
+  D.forEach(d=>{
+    const p = S.pot[d] || {};
+    h += '<tr><td>'+esc(DN[d][S.lang])+'</td>';
+    ["co2","nox","pm"].forEach(k=>{ h += '<td><input type="number" min="0" step="any" data-set="pot:'+d+':'+k+'" value="'+(p[k]!=null&&p[k]!==""?p[k]:"")+'" aria-label="'+esc(DN[d][S.lang]+" "+k)+'"></td>'; });
+    h += '</tr>';
+  });
+  h += '</tbody></table></div>';
+  $("#settings").innerHTML = h;
+}
+$("#settings").addEventListener("input", e=>{
+  const k = e.target.dataset.set; if (!k) return;
+  const p = k.split(":"), v = e.target.value;
+  if (p[0]==="max") S.max[p[1]] = num(v,0,100);
+  else if (p[0]==="pts") S.pts[Number(p[1])] = num(v,0);
+  else if (p[0]==="full") S.full = num(v,1);
+  else if (p[0]==="tcap") S.tcap = num(v,0,100);
+  else if (p[0]==="pot") { S.pot[p[1]] = S.pot[p[1]] || {}; S.pot[p[1]][p[2]] = v==="" ? "" : num(v,0); }
+  persist(); renderLive();
+});
+
+/* ---------- Rapport ---------- */
+function renderReport(){
+  const c = calc();
+  const date = new Date().toLocaleDateString(loc());
+  const meta = (S.client ? esc(S.client)+" | " : "") + esc(t("date"))+": "+date;
+  const ratio = S.pts[0] > 0 ? fmt(S.pts[4]/S.pts[0]) : "–";
+  const hasPot = D.some(d=>S.pot[d] && ["co2","nox","pm"].some(k=>Number(S.pot[d][k])>0));
+  let tb = '<table class="res"><thead><tr><th>'+esc(t("colDom"))+'</th><th>'+esc(t("colMax"))+'</th><th>'+esc(t("colScore"))+'</th><th>'+esc(t("colReal"))+'</th>';
+  if (hasPot) tb += '<th>'+esc(t("colCO2"))+'</th><th>'+esc(t("colNOx"))+'</th><th>'+esc(t("colPM"))+'</th>';
+  tb += '</tr></thead><tbody>';
+  const tot = {co2:0,nox:0,pm:0};
+  D.forEach(d=>{
+    const o = c.r[d];
+    tb += '<tr><td>'+esc(DN[d][S.lang])+'</td><td>'+fmt(o.max)+'%</td><td>'+fmt(o.total)+'%</td><td class="big">'+fmt(o.real,1)+'%</td>';
+    if (hasPot) ["co2","nox","pm"].forEach(k=>{
+      const pv = S.pot[d] ? Number(S.pot[d][k])||0 : 0, sv = pv*o.real/100; tot[k]+=sv;
+      tb += '<td>'+(pv?fmt(sv, k==="co2"?0:1):"–")+'</td>';
+    });
+    tb += '</tr>';
+  });
+  if (hasPot) tb += '<tr><td><strong>Σ</strong></td><td></td><td></td><td></td><td class="big">'+fmt(tot.co2)+'</td><td class="big">'+fmt(tot.nox,1)+'</td><td class="big">'+fmt(tot.pm,1)+'</td></tr>';
+  tb += '</tbody></table><p class="note">'+esc(t("realH"))+'</p>';
+
+  let h = '<section class="slide"><div class="meta">'+meta+'</div><h2>'+esc(t("r1Title"))+'</h2><div class="s1"><div><p class="intro">'+esc(t("r1Intro",{x:ratio}))+'</p>'+tb+warnings(c)+'</div><div>'+chartSVG(c)+'</div></div><span class="logo">'+LOGO+'</span></section>';
+
+  const sel = items().filter(m=>S.sel[m.id]);
+  let body;
+  if (!sel.length) body = '<p class="empty">'+esc(t("empty"))+'</p>';
+  else {
+    const mk = list => {
+      let x = '<table class="mt"><thead><tr><th>'+esc(t("colCode"))+'</th><th>'+esc(t("colName"))+'</th><th>'+esc(t("colLvl"))+'</th>';
+      D.forEach(d=>{ x += '<th class="d" title="'+esc(DN[d][S.lang])+'">'+AB[d][S.lang]+'</th>'; });
+      x += '</tr></thead><tbody>';
+      list.forEach(m=>{
+        const s = S.sel[m.id];
+        const lvl = m.type==="s" ? starStr(s.s||1) : (m.type==="t" ? '<span class="st">+'+fmt(s.p)+'%</span>' : "–");
+        x += '<tr><td class="c">'+(m.custom?"":m.id)+'</td><td>'+esc(nm(m))+(m.custom?'<span class="tag">'+esc(t("tag"))+'</span>':"")+'</td><td>'+lvl+'</td>';
+        D.forEach(d=>{
+          let dot = "";
+          if (m.type==="t") dot = '<span class="dot"></span>';
+          else if (m.dom[d]) dot = '<span class="dot'+(m.dom[d]<1?" h":"")+'"></span>';
+          x += '<td class="d">'+dot+'</td>';
+        });
+        x += '</tr>';
+      });
+      return x + '</tbody></table>';
+    };
+    if (sel.length > 14) { const half = Math.ceil(sel.length/2); body = '<div class="mt-wrap two">'+mk(sel.slice(0,half))+mk(sel.slice(half))+'</div>'; }
+    else body = '<div class="mt-wrap">'+mk(sel)+'</div>';
+    body += '<p class="note">'+esc(t("dotsNote"))+'</p>';
+  }
+  h += '<section class="slide'+(sel.length>28?" grow":"")+'"><div class="meta">'+meta+'</div><h2>'+esc(t("r2Title"))+'</h2>'+body+'<span class="logo">'+LOGO+'</span></section>';
+  $("#report").innerHTML = h;
+}
+
+/* ---------- Algemeen ---------- */
+function renderStatic(){
+  document.documentElement.lang = S.lang;
+  document.title = "Ottimo | " + t("title");
+  document.querySelectorAll("[data-t]").forEach(el=>el.textContent = t(el.dataset.t));
+  document.querySelectorAll("[data-tp]").forEach(el=>{ el.placeholder = t(el.dataset.tp); el.setAttribute("aria-label", t(el.dataset.tp)); });
+  document.querySelectorAll(".langs button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.lang===S.lang));
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===tab));
+  $("#client").value = S.client || "";
+  $("#logoTop").innerHTML = LOGO;
+}
+function showTab(x){
+  tab = x;
+  $("#tabM").classList.toggle("hide", x!=="m");
+  $("#tabS").classList.toggle("hide", x!=="s");
+  $("#tabR").classList.toggle("hide", x!=="r");
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===x));
+  if (x==="r") renderReport();
+}
+function update(){ persist(); renderList(); renderLive(); if (tab==="r") renderReport(); }
+function renderAll(){ renderStatic(); if (typeof hh==='function') setTimeout(hh,0); renderList(); renderLive(); renderSettings(); renderCustomForm(); if (tab==="r") renderReport(); persist(); }
+
+document.querySelectorAll(".langs button").forEach(b=>b.addEventListener("click", ()=>{ S.lang = b.dataset.lang; renderAll(); }));
+document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click", ()=>showTab(b.dataset.tab)));
+$("#q").addEventListener("input", e=>{ q = e.target.value; renderList(); });
+$("#client").addEventListener("input", e=>{ S.client = e.target.value; persist(); if (tab==="r") renderReport(); });
+$("#bSave").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(S,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  const slug = (S.client||"maatregelen").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "maatregelen";
+  a.href = URL.createObjectURL(blob);
+  a.download = slug + "-" + new Date().toISOString().slice(0,10) + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+});
+$("#bOpen").addEventListener("click", ()=>$("#file").click());
+$("#file").addEventListener("change", e=>{
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    let o = null;
+    try { o = merge(JSON.parse(rd.result)); } catch(err){}
+    if (!o) { alert(t("loadErr")); return; }
+    S = o; renderAll();
+  };
+  rd.readAsText(f);
+  e.target.value = "";
+});
+$("#bPrint").addEventListener("click", ()=>{ showTab("r"); setTimeout(()=>window.print(), 80); });
+$("#bReset").addEventListener("click", ()=>{ if (confirm(t("resetQ"))) { const l = S.lang; S = defaults(); S.lang = l; closed.clear(); renderAll(); } });
+
+function hh(){ document.documentElement.style.setProperty('--hh', (document.querySelector('header.top').offsetHeight+12)+'px'); }
+window.addEventListener('resize', hh);
+renderAll();
+showTab("m");
+hh();
+})();
+</script>
+</body>
+</html>
